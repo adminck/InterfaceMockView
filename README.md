@@ -1,0 +1,2 @@
+# InterfaceMockView
+InterfaceMockView是一个接口数据mock的平台。
