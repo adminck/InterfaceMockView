@@ -155,3 +155,12 @@ func ExtValidator(Filename string) bool {
 	}
 	return true
 }
+
+func QueryApiProxy(ApiHost string) (bool, error) {
+	var domain models.Domain
+	if err := models.DB.Where("Domain = ? ", ApiHost).First(&domain).Error; err != nil {
+		return false, err
+	}else {
+		return domain.IsHostAgent, err
+	}
+}

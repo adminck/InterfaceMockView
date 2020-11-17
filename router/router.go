@@ -1,7 +1,11 @@
 package router
 
 import (
+	API "InterfaceMockView/api"
+	"InterfaceMockView/utils/common"
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -67,25 +71,60 @@ func ApiProxy(w http.ResponseWriter, r *http.Request) {
 
 func NoRouteFunc() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		/*ApiPath := c.Request.URL.RequestURI()
+		ApiPath := c.Request.URL.RequestURI()
 		ApiHost := c.Request.URL.Host
-		ApiType := c.Request.Method*/
-		/*if ApiInfo,err := API.QueryApi(ApiPath,ApiType,ApiHost);err != nil {
-			//api.Result(api.ERROR, gin.H{}, fmt.Sprintf("接口未定义%v",err), c)
-			ApiProxy(c.Writer,c.Request)
+		ApiType := c.Request.Method
+		if ApiInfo, err := API.QueryApi(ApiPath, ApiType, ApiHost); err != nil {
+			if IsApiProxy, err := API.QueryApiProxy(ApiHost); err != nil && IsApiProxy {
+				ApiProxy(c.Writer, c.Request)
+			} else {
+				common.Result(common.ERROR, gin.H{}, fmt.Sprintf("接口未定义%v", err), c)
+			}
 			c.Abort()
 			return
-		}else {
-			JsonString,err := API.QueryApiJsonInfo(c,ApiInfo.ID)
+		} else {
+			JsonInfo, err := API.QueryApiJsonInfo(c, ApiInfo.ID)
 			if err != nil {
-				ApiProxy(c.Writer,c.Request)
-				//api.Result(api.ERROR, gin.H{}, fmt.Sprintf("接口json获取失败%v",err), c)
+				if IsApiProxy, err := API.QueryApiProxy(ApiHost); err != nil && IsApiProxy {
+					ApiProxy(c.Writer, c.Request)
+				} else {
+					common.Result(common.ERROR, gin.H{}, fmt.Sprintf("接口json获取失败%v", err), c)
+				}
 				c.Abort()
 				return
 			}
-			c.String(http.StatusOK,JsonString)
-		}*/
+			data, err := ioutil.ReadFile(JsonInfo.JsonFilePath)
+			if err != nil {
+				common.Result(common.ERROR, gin.H{}, fmt.Sprintf("接口json文件读取失败%v", err), c)
+				c.Abort()
+				return
+			}
+			if IsDoZlib(c) {
+				if callback := c.Query("callback"); callback != "" {
+					buf, _ := common.DoZlibCompress([]byte(callback + "(" + string(data) + ")"))
+					c.Writer.Write(buf)
+				} else {
+					buf, _ := common.DoZlibCompress(data)
+					c.Writer.Write(buf)
+				}
+			} else {
+				if callback := c.Query("callback"); callback != "" {
+					c.String(http.StatusOK, callback+"("+string(data)+")")
+				} else {
+					c.String(http.StatusOK, string(data))
+				}
+			}
+		}
 		c.Abort()
 		return
 	}
+}
+
+func IsDoZlib(c *gin.Context) bool {
+	if c.Request.Header["Accept-Encoding"] != nil && c.Request.Header["Accept-Encoding"][0] == "zip" {
+		c.Header("Content-Type", "application/json; charset=utf-8")
+		c.Header("Content-Encoding", "zip")
+		return true
+	}
+	return false
 }

@@ -1,6 +1,7 @@
 package models
 
 import (
+	"InterfaceMockView/utils/log"
 	"errors"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
@@ -29,5 +30,8 @@ func DBinit(config *DbConfig) (*gorm.DB, error) {
 	DB.DB().SetMaxIdleConns(config.MaxIdleConns)
 	DB.DB().SetMaxOpenConns(config.MaxOpenConns)
 	DB.LogMode(config.LogMode)
+	if err := DB.Set("gorm:table_options", "ENGINE=InnoDB").AutoMigrate(&SysUser{}, &ApiInfo{}, &ApiJsonInfo{}, &Domain{}).Error; err != nil {
+		log.Error(err)
+	}
 	return DB, nil
 }

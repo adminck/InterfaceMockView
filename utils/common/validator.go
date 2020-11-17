@@ -7,7 +7,6 @@ import (
 	"strings"
 )
 
-
 type Rules map[string][]string
 
 type RulesMap map[string]Rules

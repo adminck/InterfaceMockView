@@ -40,6 +40,6 @@ func InsertApiInfoData(c *gin.Context) {
 
 func QueryApi(ApiPath, ApiType, ApiHost string) (models.ApiInfo, error) {
 	var ApiInfo models.ApiInfo
-	err := models.DB.Where("Path =? AND Type = ? AND Domain = ?", ApiPath, ApiType, ApiHost).Find(&ApiInfo).Error
+	err := models.DB.Where("Path =? AND Type = ? AND Domain = ?", ApiPath, ApiType, ApiHost).First(&ApiInfo).Error
 	return ApiInfo, err
 }

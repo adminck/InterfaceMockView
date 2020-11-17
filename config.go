@@ -9,8 +9,8 @@ import (
 )
 
 type Config struct {
-	Db              *models.DbConfig  `json:"db"`
-	Log             *LogConfig `json:"log"`
+	Db  *models.DbConfig `json:"db"`
+	Log *LogConfig       `json:"log"`
 }
 
 type LogConfig struct {

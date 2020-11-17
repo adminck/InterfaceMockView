@@ -20,8 +20,8 @@ import (
 )
 
 type Certificates struct {
-	CertFile	string
-	KeyFile		string
+	CertFile string
+	KeyFile  string
 }
 
 var config = NewConfig()
@@ -47,14 +47,14 @@ func main() {
 		return
 	} //创建存放数据目录
 
-	DB,err := models.DBinit(config.Db)
+	DB, err := models.DBinit(config.Db)
 	if err != nil {
 		log.Error("DBinit failed")
 		return
 	} //初始化数据库连接
-	defer DB.Close()  // 程序结束前关闭数据库链接
+	defer DB.Close() // 程序结束前关闭数据库链接
 
-	if err := RunHttpServer();err != nil {
+	if err := RunHttpServer(); err != nil {
 		log.Error("HttpServer start failed")
 		return
 	} //启动http server
@@ -86,14 +86,12 @@ func RunHttpServer() error {
 	}
 	if Certs := GetCerts(); len(Certs) != 0 {
 		go func() {
-			if err := ListenAndServeTLSSNI(hss,Certs); err != nil {
+			if err := ListenAndServeTLSSNI(hss, Certs); err != nil {
 				log.Error(err)
 			}
 		}()
-	}else {
-		log.Warn("Certs len not")
 	}
-	if err := hs.ListenAndServe();err != nil {
+	if err := hs.ListenAndServe(); err != nil {
 		return err
 	}
 	return nil
@@ -126,7 +124,7 @@ func initLog(cfg *LogConfig) {
 	log.SetOutput(writer)
 }
 
-func ListenAndServeTLSSNI(srv *http.Server,Certs []Certificates) error {
+func ListenAndServeTLSSNI(srv *http.Server, Certs []Certificates) error {
 	addr := ":https"
 	certs := Certs
 	config := &tls.Config{}
@@ -156,27 +154,27 @@ func ListenAndServeTLSSNI(srv *http.Server,Certs []Certificates) error {
 
 	tlsListener := tls.NewListener(conn, config)
 	err = srv.Serve(tlsListener)
-	if err!=nil {
+	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func GetCerts() []Certificates{
+func GetCerts() []Certificates {
 	var certs []Certificates
 	var domains []models.Domain
 	if err := models.DB.Find(&domains).Error; err != nil {
-		fmt.Println("error:certslist Query Fail")
+		log.Error("certslist Query Fail")
 		return nil
 	}
-	for _,k := range domains{
+	for _, k := range domains {
 		certs = append(certs, Certificates{
 			CertFile: "./data/Domain/" + k.CrtFilePath,
-			KeyFile: "./data/Domain/" + k.KeyFilePath,
+			KeyFile:  "./data/Domain/" + k.KeyFilePath,
 		})
 	}
 	if len(certs) == 0 {
-		fmt.Println("error:certs len not")
+		log.Error("Certs len not")
 		return nil
 	}
 	return certs

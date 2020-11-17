@@ -1,11 +1,12 @@
 package common
 
 import (
+	"archive/zip"
+	"bytes"
 	"os"
 	"os/exec"
 	"path/filepath"
 )
-
 
 func PathExists(path string) (bool, error) {
 	_, err := os.Stat(path)
@@ -53,4 +54,20 @@ func GetCurrentProcessPath() string {
 	file, _ := exec.LookPath(os.Args[0])
 	path, _ := filepath.Abs(file)
 	return path
+}
+
+
+func DoZlibCompress(src []byte) ([]byte,error) {
+	var header zip.FileHeader
+	buffer := new(bytes.Buffer)
+	zipwriter := zip.NewWriter(buffer)
+	header.Method = zip.Deflate
+	fw, err := zipwriter.CreateHeader(&header)
+	if err != nil {
+		return nil,err
+	}
+	fw.Write(src)
+	zipwriter.Close()
+	data := buffer.Bytes()
+	return data,nil
 }

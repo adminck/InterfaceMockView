@@ -45,13 +45,13 @@ type JWT struct {
 }
 
 type CustomClaims struct {
-	ID          uint
-	NickName    string
+	ID       uint
+	NickName string
 	jwt.StandardClaims
 }
 
 var (
-	SigningKey		 = "qmPlus"
+	SigningKey       = "qmPlus"
 	TokenExpired     = errors.New("Token is expired")
 	TokenNotValidYet = errors.New("Token not active yet")
 	TokenMalformed   = errors.New("That's not even a token")
