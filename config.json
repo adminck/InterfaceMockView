@@ -1,0 +1,15 @@
+{
+    "db": {
+        "username": "root",
+        "password": "root",
+        "path": "127.0.0.1:3306",
+        "dbname": "test",
+        "config": "charset=utf8&parseTime=True&loc=Local",
+        "max_idle_conns": 10,
+        "max_open_conns": 10,
+        "log_mode": false
+    },
+    "log": {
+        "maxSize": 10
+    }
+}
