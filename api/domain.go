@@ -3,8 +3,11 @@ package API
 import (
 	"InterfaceMockView/models"
 	"InterfaceMockView/utils/common"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"mime/multipart"
 	"path"
 	"strings"
 )
@@ -47,18 +50,35 @@ func DeleteDomainData(c *gin.Context) {
 
 func InsertDomainData(c *gin.Context) {
 	var domain models.Domain
-	_ = c.ShouldBindJSON(&domain)
+	s := c.PostForm("Domain")
+	if err := json.Unmarshal([]byte(s), &domain); err != nil {
+		common.GinFailWithMessage(fmt.Sprintf("数据解析失败%v", err), c)
+	}
 	domainVerify := common.Rules{
 		"Domain":      {common.NotEmpty()},
-		"CrtFilePath": {common.NotEmpty()},
-		"KeyFilePath": {common.NotEmpty()},
-		"IsOpen":      {common.NotEmpty()},
 	}
 	domainVerifyErr := common.Verify(domain, domainVerify)
 	if domainVerifyErr != nil {
 		common.GinFailWithMessage(domainVerifyErr.Error(), c)
 		return
 	}
+
+	if f, err := c.FormFile("CrtFile"); err == nil {
+		name := domain.Domain + "_CrtFile.crt"
+		if err := SaveFile(f,name,c); err != nil {
+			common.GinFailWithMessage(fmt.Sprintf("证书文件保存失败%v", err), c)
+			return
+		}
+	}
+
+	if f, err := c.FormFile("KeyFile"); err == nil {
+		name := domain.Domain + "_KeyFile.key"
+		if err := SaveFile(f,name,c); err != nil {
+			common.GinFailWithMessage(fmt.Sprintf("证书文件保存失败%v", err), c)
+			return
+		}
+	}
+
 	claims, _ := c.Get("claims")
 	waitUse := claims.(*common.CustomClaims)
 	domain.UpdatedUser = waitUse.NickName
@@ -71,19 +91,36 @@ func InsertDomainData(c *gin.Context) {
 
 func UpdateDomainData(c *gin.Context) {
 	var domain models.Domain
-	_ = c.ShouldBindJSON(&domain)
+	s := c.PostForm("Domain")
+	if err := json.Unmarshal([]byte(s), &domain); err != nil {
+		common.GinFailWithMessage(fmt.Sprintf("数据解析失败%v", err), c)
+	}
 	domainVerify := common.Rules{
-		"ID":          {common.NotEmpty()},
-		"Domain":      {common.NotEmpty()},
-		"CrtFilePath": {common.NotEmpty()},
-		"KeyFilePath": {common.NotEmpty()},
-		"IsOpen":      {common.NotEmpty()},
+		"ID":          		{common.NotEmpty()},
+		"Domain":      		{common.NotEmpty()},
 	}
 	domainVerifyErr := common.Verify(domain, domainVerify)
 	if domainVerifyErr != nil {
 		common.GinFailWithMessage(domainVerifyErr.Error(), c)
 		return
 	}
+
+	if f, err := c.FormFile("CrtFile"); err == nil {
+		name := domain.Domain + "_CrtFile.crt"
+		if err := SaveFile(f,name,c); err != nil {
+			common.GinFailWithMessage(fmt.Sprintf("证书文件保存失败%v", err), c)
+			return
+		}
+	}
+
+	if f, err := c.FormFile("KeyFile"); err == nil {
+		name := domain.Domain + "_KeyFile.key"
+		if err := SaveFile(f,name,c); err != nil {
+			common.GinFailWithMessage(fmt.Sprintf("证书文件保存失败%v", err), c)
+			return
+		}
+	}
+
 	claims, _ := c.Get("claims")
 	waitUse := claims.(*common.CustomClaims)
 	domain.UpdatedUser = waitUse.NickName
@@ -94,48 +131,18 @@ func UpdateDomainData(c *gin.Context) {
 	}
 }
 
-func CreateKeyFile(c *gin.Context) {
+func SaveFile(f *multipart.FileHeader,SaveName string,c *gin.Context) (err error) {
 	common.CreateDir(DomainPath)
-	f, err := c.FormFile("Key")
-	//错误处理
-	if err != nil {
-		common.GinFailWithMessage(fmt.Sprintf("文件上传失败%v", err), c)
-		return
-	} else {
-		if !ExtValidator(f.Filename) {
-			common.GinFailWithMessage(fmt.Sprintf("后缀名不符合上传要求"), c)
-			return
-		}
-		Filename := DomainPath + f.Filename
-		if err := c.SaveUploadedFile(f, Filename); err != nil {
-			common.GinFailWithMessage(fmt.Sprintf("文件上传失败%v", err), c)
-			return
-		}
-		//保存成功返回正确的Json数据
-		common.GinOkWithMessage(f.Filename, c)
+	if !ExtValidator(f.Filename) {
+		err = errors.New("后缀名不符合上传要求")
+		return err
 	}
-}
-
-func CreateCrtFile(c *gin.Context) {
-	common.CreateDir(DomainPath)
-	f, err := c.FormFile("Crt")
-	//错误处理
-	if err != nil {
-		common.GinFailWithMessage(fmt.Sprintf("文件上传失败%v", err), c)
-		return
-	} else {
-		if !ExtValidator(f.Filename) {
-			common.GinFailWithMessage(fmt.Sprintf("后缀名不符合上传要求"), c)
-			return
-		}
-		Filename := DomainPath + f.Filename
-		if err := c.SaveUploadedFile(f, Filename); err != nil {
-			common.GinFailWithMessage(fmt.Sprintf("文件上传失败%v", err), c)
-			return
-		}
-		//保存成功返回正确的Json数据
-		common.GinOkWithMessage(f.Filename, c)
+	Filename := DomainPath + SaveName
+	if er := c.SaveUploadedFile(f, Filename); er != nil {
+		err = errors.New(fmt.Sprintf("文件保存失败%v", er))
+		return err
 	}
+	return nil
 }
 
 func ExtValidator(Filename string) bool {

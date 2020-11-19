@@ -12,8 +12,6 @@ func InitDomainRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 		BaseRouter.POST("GetData", API.GetDomainData)
 		BaseRouter.POST("Insert", API.InsertDomainData)
 		BaseRouter.POST("Update", API.UpdateDomainData)
-		BaseRouter.POST("UpCrtFile", API.CreateCrtFile)
-		BaseRouter.POST("UpKeyFile", API.CreateKeyFile)
 		BaseRouter.POST("Delete", API.DeleteDomainData)
 	}
 	return BaseRouter
