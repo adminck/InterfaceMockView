@@ -5,7 +5,7 @@
             <el-aside class="main-cont main-left">
                 <div class="tilte">
                     <img alt class="logoimg" src="~@/assets/nav_logo.png" />
-                    <h2 class="tit-text" v-if="isSider">Gin-Vue-Admin</h2>
+                    <h2 class="tit-text" v-if="isSider">接口Mock平台</h2>
                 </div>
                 <Aside class="aside" />
             </el-aside>
@@ -332,6 +332,7 @@ export default {
         font-weight: 600;
         font-size: 20px;
         vertical-align: middle;
+        margin-left: 20px;
     }
     }
 

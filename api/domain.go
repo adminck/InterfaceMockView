@@ -1,6 +1,7 @@
 package API
 
 import (
+	"InterfaceMockView/api/https"
 	"InterfaceMockView/models"
 	"InterfaceMockView/utils/common"
 	"encoding/json"
@@ -44,6 +45,7 @@ func DeleteDomainData(c *gin.Context) {
 	if err := models.DB.Delete(&domain).Error; err != nil {
 		common.GinFailWithMessage(fmt.Sprintf("域名删除失败%v", err), c)
 	} else {
+		https.SSLServerMgr.Restart()
 		common.GinOkWithMessage("域名删除成功！", c)
 	}
 }
@@ -85,12 +87,14 @@ func InsertDomainData(c *gin.Context) {
 	if err := models.DB.Create(&domain).Error; err != nil {
 		common.GinFailWithMessage(fmt.Sprintf("域名添加失败%v", err), c)
 	} else {
+		https.SSLServerMgr.Restart()
 		common.GinOkWithMessage("域名添加成功！", c)
 	}
 }
 
 func UpdateDomainData(c *gin.Context) {
 	var domain models.Domain
+	IsFileUpdate := false
 	s := c.PostForm("Domain")
 	if err := json.Unmarshal([]byte(s), &domain); err != nil {
 		common.GinFailWithMessage(fmt.Sprintf("数据解析失败%v", err), c)
@@ -111,6 +115,7 @@ func UpdateDomainData(c *gin.Context) {
 			common.GinFailWithMessage(fmt.Sprintf("证书文件保存失败%v", err), c)
 			return
 		}
+		IsFileUpdate = true
 	}
 
 	if f, err := c.FormFile("KeyFile"); err == nil {
@@ -119,6 +124,7 @@ func UpdateDomainData(c *gin.Context) {
 			common.GinFailWithMessage(fmt.Sprintf("证书文件保存失败%v", err), c)
 			return
 		}
+		IsFileUpdate = true
 	}
 
 	claims, _ := c.Get("claims")
@@ -127,6 +133,9 @@ func UpdateDomainData(c *gin.Context) {
 	if err := models.DB.Save(&domain).Error; err != nil {
 		common.GinFailWithMessage(fmt.Sprintf("域名修改失败%v", err), c)
 	} else {
+		if IsFileUpdate {
+			https.SSLServerMgr.Restart()
+		}
 		common.GinOkWithMessage("域名修改成功！", c)
 	}
 }
@@ -163,11 +172,16 @@ func ExtValidator(Filename string) bool {
 	return true
 }
 
-func QueryApiProxy(ApiHost string) (bool, error) {
+func QueryApiProxy(ApiHost string) (models.Domain, error) {
 	var domain models.Domain
-	if err := models.DB.Where("Domain = ? ", ApiHost).First(&domain).Error; err != nil {
-		return false, err
-	}else {
-		return domain.IsHostAgent, err
+
+	if strs := strings.Split(ApiHost,"."); len(strs) > 2 {
+		ApiHost = strs[len(strs) - 2] + "." + strs[len(strs) - 1]
 	}
+
+	if err := models.DB.Where("Domain = ? ", ApiHost).First(&domain).Error; err != nil {
+		domain.IsHostAgent = false
+
+	}
+	return domain, nil
 }

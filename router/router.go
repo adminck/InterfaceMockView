@@ -2,6 +2,7 @@ package router
 
 import (
 	API "InterfaceMockView/api"
+	"InterfaceMockView/models"
 	"InterfaceMockView/utils/common"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -53,7 +54,7 @@ func Cors() gin.HandlerFunc {
 	}
 }
 
-func ApiProxy(w http.ResponseWriter, r *http.Request) {
+func ApiProxy(w http.ResponseWriter, r *http.Request,domain models.Domain) {
 	var Scheme string
 	if r.TLS != nil {
 		Scheme = "https"
@@ -64,17 +65,20 @@ func ApiProxy(w http.ResponseWriter, r *http.Request) {
 		Scheme: Scheme,
 		Host:   r.Host,
 	}
+	if domain.HostAgent != "" {
+		proxyurl.Host = domain.HostAgent
+	}
 	proxy := httputil.NewSingleHostReverseProxy(proxyurl)
 	proxy.ServeHTTP(w, r)
 }
 
 func NoRouteFunc() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		ApiPath := c.Request.RequestURI
+		ApiPath := c.Request.URL.Path
 		ApiHost := c.Request.Host
 		if ApiInfo, err := API.QueryApi(ApiPath, ApiHost); err != nil {
-			if IsApiProxy, err := API.QueryApiProxy(ApiHost); err != nil && IsApiProxy {
-				ApiProxy(c.Writer, c.Request)
+			if domain, err := API.QueryApiProxy(ApiHost); err != nil && domain.IsHostAgent {
+				ApiProxy(c.Writer, c.Request,domain)
 			} else {
 				common.Result(common.ERROR, gin.H{}, fmt.Sprintf("接口未定义%v", err.Error()), c)
 			}
@@ -82,15 +86,16 @@ func NoRouteFunc() gin.HandlerFunc {
 			return
 		} else {
 			if JsonInfo, err := API.QueryApiJsonInfo(c, ApiInfo.ID);err != nil {
-				if IsApiProxy, err := API.QueryApiProxy(ApiHost); err != nil && IsApiProxy {
-					ApiProxy(c.Writer, c.Request)
-				} else {
-					common.Result(common.ERROR, gin.H{}, fmt.Sprintf("接口json获取失败%v", err), c)
+				if domain, _ := API.QueryApiProxy(ApiHost); domain.IsHostAgent {
+					ApiProxy(c.Writer, c.Request,domain)
+					c.Abort()
+					return
 				}
+				common.Result(common.ERROR, gin.H{}, fmt.Sprintf("接口json获取失败%v", err), c)
 				c.Abort()
 				return
 			}else {
-				API.GetJsonData(c,JsonInfo.JsonFilePath)
+				API.GetJsonData(c,JsonInfo.JsonContent)
 			}
 		}
 		c.Abort()

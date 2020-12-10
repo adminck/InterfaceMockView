@@ -16,8 +16,8 @@
         <el-form-item label="参数：">
           <el-input type="textarea" v-model="ApiJsonInfo.Parameter"></el-input>
         </el-form-item>
-        <el-form-item label="返回接口文件：">
-          <el-button type="text" @click="outerVisible = true">{{ ApiJsonInfo.JsonFilePath }}</el-button>
+        <el-form-item label="返回json信息：">
+          <el-button type="text" @click="outerVisible = true">编辑</el-button>
         </el-form-item>
         <el-form-item label="是否启动校验：">
           <el-switch v-model="ApiJsonInfo.IsOpen"></el-switch>
@@ -27,7 +27,7 @@
         </el-form-item>
       </el-form>
     </div>
-    <el-dialog title="json文件编辑" @opened="OpenDialog" :visible.sync="outerVisible">
+    <el-dialog title="json文件编辑" :before-close="EditJsonClose" @opened="OpenDialog" :visible.sync="outerVisible">
       <div id="jsoneditor" />
     </el-dialog>
   </div>
@@ -54,16 +54,16 @@ export default {
   },
   methods: {
     addTab() {
-      let index = this.ApiJsonInfoList.push({ ID: '' + (this.ApiJsonInfoList.length + 1), ParamType: 2, Parameter: '', JsonFilePath: 'default.json', IsOpen: false, New: true });
-      this.editableTabsValue = (this.ApiJsonInfoList.length + 1) + ''
+      let index = this.ApiJsonInfoList.push({ ID: this.ApiJsonInfoList.length + 1, ParamType: 2, Parameter: '', IsOpen: false, New: true });
+      this.editableTabsValue = this.ApiJsonInfoList.length + 1
       this.ApiJsonInfo = this.ApiJsonInfoList[index - 1]
     },
     removeTab(targetName) {
       let targetData;
       for (let index = 0; index < this.ApiJsonInfoList.length; index++) {
-        if (targetName === this.ApiJsonInfoList[index].ID + '') {
+        if (Number(targetName) === this.ApiJsonInfoList[index].ID) {
           targetData = this.ApiJsonInfoList[index]
-          if (targetData.New == undefined) {
+          if (targetData.New === undefined) {
             this.$confirm('删除接口配置, 是否继续?', '提示', {
               confirmButtonText: '确定',
               cancelButtonText: '取消',
@@ -88,8 +88,8 @@ export default {
       }
     },
     beforeLeave(currentName, oldName) {
-      if (currentName == "add") {
-        if (this.ApiId == 0){
+      if (currentName === "add") {
+        if (this.ApiId === 0){
           this.$message({ type: 'error', message: "请先选择接口", showClose: true })
           return false
         }
@@ -122,41 +122,31 @@ export default {
       })
     },
     update() {
-      if (targetData.New === undefined) {
-        let jsondata = this.resultInfo
-        let InsertData = { ParamType: this.ApiJsonInfo.ParamType, Parameter: this.ApiJsonInfo.Parameter, JsonFilePath: this.ApiJsonInfo.JsonFilePath, IsOpen: this.ApiJsonInfo.IsOpen }
-        InsertData.ApiID = this.ApiId
-        let data = {json:jsondata,Data:InsertData}
-        ApiJsonInfo.InsertApiJsonInfo(data).then((res) => {
-          if (res.code == 0) {
-            this.$message({ type: "success", message: res.msg, showClose: true, });
-            this.GetApiJsonData();
-          }
-        });
-      } else {
-        let jsondata = this.resultInfo
-        let UpdateData = { ID: parseInt(this.ApiJsonInfo.ID), ParamType: this.ApiJsonInfo.ParamType, Parameter: this.ApiJsonInfo.Parameter, JsonFilePath: this.ApiJsonInfo.JsonFilePath, IsOpen: this.ApiJsonInfo.IsOpen }
-        UpdateData.ApiID = this.ApiId
-        let data = {json:jsondata,Data:InsertData}
-        ApiJsonInfo.UpdateApiJsonInfo(data).then((res) => {
-          if (res.code == 0) {
-            this.$message({ type: "success", message: res.msg, showClose: true, });
-            this.GetApiJsonData();
-          }
-        });
+      if (this.ApiJsonInfo.New !== undefined){
+        this.ApiJsonInfo.ApiID = this.ApiId
+        console.log(this.ApiJsonInfo)
+        ApiJsonInfo.InsertApiJsonInfo(this.ApiJsonInfo).then(res =>{
+          this.$message({ type: 'error', message: res.msg, showClose: true })
+        })
+      }else {
+        ApiJsonInfo.UpdateApiJsonInfo(this.ApiJsonInfo).then(res =>{
+          this.$message({ type: 'error', message: res.msg, showClose: true })
+        })
       }
     },
     OpenDialog () {
       if(this.jsoneditor === undefined){
         this.jsoneditor = new JSONEditor(document.getElementById("jsoneditor"), {mode: 'text',modes: ['view', 'form', 'text', 'code', 'tree']})
       }
-      if (this.ApiJsonInfo.New === undefined){
-        ApiJsonInfo.GetJSON({JsonFilePath:this.ApiJsonInfo.JsonFilePath}).then((res) => {
-          this.jsoneditor.set(res.data)
-        })
-      }else {
-         this.jsoneditor.set(`{}`)
+      if (this.ApiJsonInfo.JsonContent !== ""){
+        this.jsoneditor.set(JSON.parse(this.ApiJsonInfo.JsonContent))
+      } else {
+        this.jsoneditor.set({})
       }
+    },
+    EditJsonClose(done){
+      this.ApiJsonInfo.JsonContent = JSON.stringify(this.jsoneditor.get())
+      done()
     }
   },
   watch: {

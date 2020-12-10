@@ -59,7 +59,6 @@ import { store } from '@/store/index'
 import { ApiInfo, Domain } from '@/request/api'
 import apijson from './apijsoninfo/apijson.vue'
 
-
 export default {
   name: 'Person',
   data() {

@@ -13,7 +13,6 @@ func InitApiJsonInfoRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 		BaseRouter.POST("Insert", API.InsertApiJsonInfoData)
 		BaseRouter.POST("Update", API.UpdateApiJsonInfoData)
 		BaseRouter.POST("Delete", API.DeleteApiJsonInfoData)
-		BaseRouter.GET("GetJSON", API.GetJsonDataC)
 	}
 	return BaseRouter
 }
