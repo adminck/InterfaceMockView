@@ -71,7 +71,7 @@
                 this.historys = [{name: 'person', meta: {title: '首页'}}]
                 this.$router.push({ name: 'person' })
                 this.contextMenuVisible = false
-                sessionStorage.setItem('historys', JSON.stringify(this.historys))
+                console.log(this.contextMenuVisible)
             },
             closeLeft() {
                 const rightIndex = this.historys.findIndex(
@@ -84,7 +84,6 @@
                 if (rightIndex > activeIndex) {
                     this.$router.push({ name: this.rightActive })
                 }
-                sessionStorage.setItem('historys', JSON.stringify(this.historys))
             },
             closeRight() {
                 const leftIndex = this.historys.findIndex(
@@ -97,14 +96,12 @@
                 if (leftIndex < activeIndex) {
                     this.$router.push({ name: this.rightActive })
                 }
-                sessionStorage.setItem('historys', JSON.stringify(this.historys))
             },
             closeOther() {
                 this.historys = this.historys.filter(
                     item => item.name == this.rightActive
                 )
                 this.$router.push({ name: this.rightActive })
-                sessionStorage.setItem('historys', JSON.stringify(this.historys))
             },
             setTab(route) {
                 if (!this.historys.some(item => item.name == route.name)) {
@@ -116,7 +113,7 @@
                 this.activeValue = this.$route.name
             },
             changeTab(tab) {
-                if (tab.name != this.activeValue){
+                if (tab.name != this.$route.name){
                     this.$router.push({ name: tab.name })
                 }
             },
@@ -151,7 +148,6 @@
             $route(to) {
                 this.historys = this.historys.filter(item => !item.meta.hidden)
                 this.setTab(to)
-                sessionStorage.setItem('historys', JSON.stringify(this.historys))
             }
         },
         beforeDestroy() {
