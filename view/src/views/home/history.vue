@@ -68,7 +68,7 @@
                 }
             },
             closeAll() {
-                this.historys = [{name: 'person', meta: {title: '个人信息'}}]
+                this.historys = [{name: 'person', meta: {title: '首页'}}]
                 this.$router.push({ name: 'person' })
                 this.contextMenuVisible = false
                 sessionStorage.setItem('historys', JSON.stringify(this.historys))

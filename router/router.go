@@ -19,7 +19,7 @@ func Routers() *gin.Engine {
 	// 跨域
 	Router.Use(Cors())
 	Router.Static("/static", "./dist/static")
-	//Router.LoadHTMLGlob("./dist/index.html") //这是前台的index
+	Router.LoadHTMLGlob("./dist/index.html") //这是前台的index
 
 	Router.NoMethod(NoRouteFunc())
 	Router.NoRoute(NoRouteFunc())
@@ -29,6 +29,7 @@ func Routers() *gin.Engine {
 	//登陆以及鉴权路由
 	InitHomeRouter(ApiGroup)
 	InitAuthorityLoginRouter(ApiGroup) // 注册基础功能路由 不做鉴权
+
 	InitDomainRouter(ApiGroup)
 	InitApiInfoRouter(ApiGroup)
 	InitApiJsonInfoRouter(ApiGroup)

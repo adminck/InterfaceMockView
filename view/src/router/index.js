@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Login from '@/views/Login.vue'
-import about from '@/views/home'
+import home from '@/views/home'
 import Domain from '@/views/Domain'
 import error from '@/views/error.vue'
 import register from '@/views/register.vue'
@@ -14,9 +14,9 @@ const routes = [
   { path: '/login', name: 'Login', component: Login },
   { path: '*', name: '404', component: error },
   { path: '/register', name: 'register', component: register },
-  { path: '/about',
-    name: 'About',
-    component: about,
+  { path: '/home',
+    name: 'home',
+    component: home,
     children:[
       { path: '', redirect: { name: 'person' }},
       { path: 'person', name: 'person', component: () => import('@/views/ApiInfo/person.vue'),meta:{title:"接口管理"} },
@@ -26,7 +26,7 @@ const routes = [
 ]
 
 const router = new VueRouter({
-  mode: 'history',
+  //mode: 'history',
   base: process.env.BASE_URL,
   routes
 })
@@ -45,7 +45,7 @@ router.beforeEach(async(to, from, next) => {
   // 在白名单中的判断情况
   if (whiteList.indexOf(to.name) > -1) {
     if (token) {
-      next({ path: '/about' })
+      next({ path: '/home' })
     } else {
       next()
     }

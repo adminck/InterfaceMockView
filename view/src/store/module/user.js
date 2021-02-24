@@ -51,7 +51,7 @@ export const user = {
                 if (redirect) {
                     router.push({ path: redirect })
                 } else {
-                    router.push({ path: '/about' })
+                    router.push({ path: '/home' })
                 }
             }
         },

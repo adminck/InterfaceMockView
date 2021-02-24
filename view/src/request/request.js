@@ -4,7 +4,7 @@ import { store } from '@/store/index'
 
 
 const service = axios.create({
-    baseURL: 'http://127.0.0.1',
+    baseURL: process.env.NODE_ENV === 'development' ? 'http://127.0.0.1' : '',
     timeout: 99999,
 })
 
