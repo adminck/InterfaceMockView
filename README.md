@@ -15,4 +15,3 @@ InterfaceMockView是一个接口数据mock的平台。
  go version go1.14.2  
  
 
-## 交流QQ群 ： 26757277
