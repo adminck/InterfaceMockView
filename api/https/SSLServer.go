@@ -49,7 +49,7 @@ func ListenAndServeTLSSNI(srv *http.Server, Certs []Certificates) error {
 	for i, v := range certs {
 		config.Certificates[i], err = tls.LoadX509KeyPair(v.CertFile, v.KeyFile)
 		if err != nil {
-			return err
+			log.Error(err)
 		}
 	}
 

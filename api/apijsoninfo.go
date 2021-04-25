@@ -39,7 +39,7 @@ func InsertApiJsonInfoData(c *gin.Context) {
 	claims, _ := c.Get("claims")
 	waitUse := claims.(*common.CustomClaims)
 	ApiJsonInfo.UpdatedUser = waitUse.NickName
-
+	ApiJsonInfo.ID = 0
 	if err := models.DB.Create(&ApiJsonInfo).Error; err != nil {
 		common.GinFailWithMessage(fmt.Sprintf("添加失败%v", err), c)
 	} else {
@@ -145,7 +145,7 @@ func CheckApiParam(c *gin.Context, ApiJsonInfo models.ApiJsonInfo) bool {
 
 func Param(c *gin.Context, ApiJsonInfo models.ApiJsonInfo) bool {
 	isField := false
-	FieldStr := strings.Split(ApiJsonInfo.Parameter, ";")
+	FieldStr := strings.Split(ApiJsonInfo.Parameter, "&")
 	for _, Field := range FieldStr {
 		s := strings.Split(Field, "=")
 		if len(s) == 2 && s[0] != "" && s[1] != "" {
@@ -162,7 +162,7 @@ func Param(c *gin.Context, ApiJsonInfo models.ApiJsonInfo) bool {
 
 func FormData(c *gin.Context, ApiJsonInfo models.ApiJsonInfo) bool {
 	isField := false
-	FieldStr := strings.Split(ApiJsonInfo.Parameter, ";")
+	FieldStr := strings.Split(ApiJsonInfo.Parameter, "&")
 	for _, Field := range FieldStr {
 		s := strings.Split(Field, "=")
 		if len(s) == 2 && s[0] != "" && s[1] != "" {

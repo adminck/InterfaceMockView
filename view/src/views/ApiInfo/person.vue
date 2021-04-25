@@ -4,7 +4,7 @@
       <el-card shadow="never">
         <div slot="header" class="clearfix">
           <span>接口列表</span>
-          <el-button style="float: right; padding: 3px 0" type="text" @click="outerVisible = true">新增接口
+          <el-button style="float: right; padding: 3px 0" type="text" @click="add">新增接口
           </el-button>
         </div>
         <el-input placeholder="输入关键字进行过滤" v-model="filterText"></el-input>
@@ -138,6 +138,11 @@ export default {
         });
       }
       this.outerVisible = false;
+    },
+    add(){
+      this.iscreate = true
+      this.apiinfo = { Name: '', Path: '', Domain: '' } 
+      this.outerVisible = true
     }
   },
   created() {

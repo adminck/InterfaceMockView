@@ -17,7 +17,7 @@
           <el-input type="textarea" v-model="ApiJsonInfo.Parameter"></el-input>
         </el-form-item>
         <el-form-item label="返回json信息：">
-          <el-button type="text" @click="outerVisible = true">编辑</el-button>
+          <el-button type="text" @click="OpenJson">编辑</el-button>
         </el-form-item>
         <el-form-item label="是否启动校验：">
           <el-switch v-model="ApiJsonInfo.IsOpen"></el-switch>
@@ -54,7 +54,7 @@ export default {
   },
   methods: {
     addTab() {
-      let index = this.ApiJsonInfoList.push({ ID: this.ApiJsonInfoList.length + 1, ParamType: 2, Parameter: '', IsOpen: false, New: true });
+      let index = this.ApiJsonInfoList.push({ ID: this.ApiJsonInfoList.length + 1, ParamType: 2,JsonContent:"{}", Parameter: '', IsOpen: false, New: true });
       this.editableTabsValue = this.ApiJsonInfoList.length + 1
       this.ApiJsonInfo = this.ApiJsonInfoList[index - 1]
     },
@@ -147,7 +147,11 @@ export default {
     EditJsonClose(done){
       this.ApiJsonInfo.JsonContent = JSON.stringify(this.jsoneditor.get())
       done()
+    },
+    OpenJson () {
+      this.outerVisible = true
     }
+
   },
   watch: {
     ApiId: function () {

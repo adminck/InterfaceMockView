@@ -67,6 +67,7 @@ func InsertDomainData(c *gin.Context) {
 
 	if f, err := c.FormFile("CrtFile"); err == nil {
 		name := domain.Domain + "_CrtFile.crt"
+		domain.CrtFilePath = name
 		if err := SaveFile(f,name,c); err != nil {
 			common.GinFailWithMessage(fmt.Sprintf("证书文件保存失败%v", err), c)
 			return
@@ -75,6 +76,7 @@ func InsertDomainData(c *gin.Context) {
 
 	if f, err := c.FormFile("KeyFile"); err == nil {
 		name := domain.Domain + "_KeyFile.key"
+		domain.KeyFilePath = name
 		if err := SaveFile(f,name,c); err != nil {
 			common.GinFailWithMessage(fmt.Sprintf("证书文件保存失败%v", err), c)
 			return
