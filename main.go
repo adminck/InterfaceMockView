@@ -7,14 +7,11 @@ import (
 	"InterfaceMockView/utils/common"
 	"InterfaceMockView/utils/log"
 	"fmt"
-	"io"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
 	"os/signal"
-	"path"
 	"path/filepath"
-	"runtime/debug"
 	"time"
 )
 
@@ -23,18 +20,12 @@ var config = NewConfig()
 func main() {
 	os.Chdir(filepath.Dir(common.GetCurrentProcessPath()))
 
-	go func() {
-		for {
-			debug.FreeOSMemory()
-			time.Sleep(time.Minute)
-		}
-	}()
-
-	initLog(config.Log)
 	if err := config.Load(); err != nil {
 		log.Error("config.json read failed")
 		return
 	}
+
+	log.InitLog(config.Log)
 
 	if err := common.CreateDir("./data"); err != nil {
 		log.Error("CreateDir data failed")
@@ -77,32 +68,3 @@ func RunHttpServer() error {
 	}
 	return nil
 }
-
-func initLog(cfg *LogConfig) {
-	level := log.StringToLevel(cfg.LogLevel)
-	log.SetLevel(level)
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
-
-	var (
-		writer io.Writer
-		err    error
-	)
-	writer, err = log.NewFileWriter(
-		path.Join(filepath.Dir(common.GetCurrentProcessPath()), "log", "InterfaceMockView.log"),
-		log.ReserveDays(cfg.ReserveDays),
-		log.RotateByDaily(true),
-		log.LogFileMaxSize(cfg.MaxSize),
-	)
-	if err != nil {
-		log.Errorln("create file writer error:", err)
-		return
-	}
-
-	if cfg.PrintScreen {
-		writer = io.MultiWriter(writer, os.Stdout)
-	}
-
-	log.SetOutput(writer)
-}
-
-

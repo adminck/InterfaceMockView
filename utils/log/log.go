@@ -1,10 +1,14 @@
 package log
 
 import (
+	"InterfaceMockView/utils/common"
 	"fmt"
 	"io"
+	"log"
 	"math"
 	"os"
+	"path"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"sync"
@@ -46,6 +50,46 @@ type Logger struct {
 	out   io.Writer
 	flag  int
 	buf   []byte
+}
+
+type Config struct {
+	LogLevel    string `json:"logLevel"`    // 日志级别，支持：off/trace/debug/info/warn/error/panic/fatal
+	ReserveDays int    `json:"reserveDays"` // 日志文件保留天数
+	MaxSize     int    `json:"maxSize"`     // 日志文件最大大小，单位：MB
+	PrintScreen bool   `json:"printScreen"` // 是否打印至标准输出
+}
+
+func (l *Config) String() string {
+	return fmt.Sprintf("%+v", *l)
+}
+
+func InitLog(cfg *Config) {
+	level := StringToLevel(cfg.LogLevel)
+	SetLevel(level)
+	SetFlags(log.LstdFlags | log.Lshortfile)
+
+	var (
+		writer io.Writer
+		err    error
+	)
+	ProcessPath := common.GetCurrentProcessPath()
+
+	writer, err = NewFileWriter(
+		path.Join(filepath.Dir(ProcessPath), "log", fmt.Sprintf("%s.log", common.GetCurrentProcessName(ProcessPath))),
+		ReserveDays(cfg.ReserveDays),
+		RotateByDaily(true),
+		LogFileMaxSize(cfg.MaxSize),
+	)
+	if err != nil {
+		Errorln("create file writer error:", err)
+		return
+	}
+
+	if cfg.PrintScreen {
+		writer = io.MultiWriter(writer, os.Stdout)
+	}
+
+	log.SetOutput(writer)
 }
 
 // New creates a new Logger.   The out variable sets the

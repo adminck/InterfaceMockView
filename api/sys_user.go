@@ -53,7 +53,7 @@ func tokenNext(c *gin.Context, user *models.SysUser) {
 		StandardClaims: jwt.StandardClaims{
 			NotBefore: time.Now().Unix() - 1000,  // 签名生效时间
 			ExpiresAt: time.Now().Unix() + 60*60, // 过期时间 一小时
-			Issuer:    "qmPlus",                  // 签名的发行者
+			Issuer:    common.SigningKey,         // 签名的发行者
 		},
 	}
 	token, err := j.CreateToken(clams)

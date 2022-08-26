@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 )
 
 func PathExists(path string) (bool, error) {
@@ -51,6 +52,13 @@ func CWD() string {
 	return filepath.Dir(path)
 }
 
+func GetCurrentProcessName(path string) string {
+	baseName := filepath.Base(path)
+	ext := filepath.Ext(baseName)
+	name := strings.TrimSuffix(baseName, ext)
+	return name
+}
+
 func GetCurrentProcessPath() string {
 	file, _ := exec.LookPath(os.Args[0])
 	path, _ := filepath.Abs(file)
@@ -78,17 +86,17 @@ func CompareTwoMapInterface(data1 map[string]interface{}, data2 map[string]inter
 	return string(dataStr1) == string(dataStr2)
 }
 
-func DoZlibCompress(src []byte) ([]byte,error) {
+func DoZlibCompress(src []byte) ([]byte, error) {
 	var header zip.FileHeader
 	buffer := new(bytes.Buffer)
 	zipwriter := zip.NewWriter(buffer)
 	header.Method = zip.Deflate
 	fw, err := zipwriter.CreateHeader(&header)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	fw.Write(src)
 	zipwriter.Close()
 	data := buffer.Bytes()
-	return data,nil
+	return data, nil
 }

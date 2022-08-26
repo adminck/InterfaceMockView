@@ -19,9 +19,9 @@ func InitAuthorityLoginRouter(Router *gin.RouterGroup) (R gin.IRoutes) {
 func InitHomeRouter(Router *gin.RouterGroup) {
 	ApiRouter := Router.Group("")
 	{
-		ApiRouter.GET("", Home)         // 创建Api
-		ApiRouter.GET("login", Home)    // 创建Api
-		ApiRouter.GET("register", Home) // 创建Api
+		ApiRouter.GET("", Home)
+		ApiRouter.GET("login", Home)
+		ApiRouter.GET("register", Home)
 	}
 }
 

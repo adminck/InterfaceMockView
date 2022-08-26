@@ -15,7 +15,7 @@ import (
 
 func Routers() *gin.Engine {
 	var Router = gin.Default()
-	//Router.Use(LoadTls())  // 打开就能玩https了
+
 	// 跨域
 	Router.Use(Cors())
 	Router.Static("/static", "./dist/static")
@@ -55,7 +55,7 @@ func Cors() gin.HandlerFunc {
 	}
 }
 
-func ApiProxy(w http.ResponseWriter, r *http.Request,domain models.Domain) {
+func ApiProxy(w http.ResponseWriter, r *http.Request, domain models.Domain) {
 	var Scheme string
 	if r.TLS != nil {
 		Scheme = "https"
@@ -79,24 +79,24 @@ func NoRouteFunc() gin.HandlerFunc {
 		ApiHost := c.Request.Host
 		if ApiInfo, err := API.QueryApi(ApiPath, ApiHost); err != nil {
 			if domain, err := API.QueryApiProxy(ApiHost); err != nil && domain.IsHostAgent {
-				ApiProxy(c.Writer, c.Request,domain)
+				ApiProxy(c.Writer, c.Request, domain)
 			} else {
 				common.Result(common.ERROR, gin.H{}, fmt.Sprintf("接口未定义%v", err.Error()), c)
 			}
 			c.Abort()
 			return
 		} else {
-			if JsonInfo, err := API.QueryApiJsonInfo(c, ApiInfo.ID);err != nil {
+			if JsonInfo, err := API.QueryApiJsonInfo(c, ApiInfo.ID); err != nil {
 				if domain, _ := API.QueryApiProxy(ApiHost); domain.IsHostAgent {
-					ApiProxy(c.Writer, c.Request,domain)
+					ApiProxy(c.Writer, c.Request, domain)
 					c.Abort()
 					return
 				}
 				common.Result(common.ERROR, gin.H{}, fmt.Sprintf("接口json获取失败%v", err), c)
 				c.Abort()
 				return
-			}else {
-				API.GetJsonData(c,JsonInfo.JsonContent)
+			} else {
+				API.GetJsonData(c, JsonInfo.JsonContent)
 			}
 		}
 		c.Abort()
